@@ -30,6 +30,12 @@ describe Integer do
   end
 end
 
+describe Float do
+  it "should be serialized in PHP's data serialization format" do
+    123.456.php_serialize.should == 'd:123.456;'
+  end
+end
+
 describe Hash do
   it "should be serialized in PHP's data serialization format" do
     {"hoge" => 1, "fuga" => "piyo"}.php_serialize.should == 'a:2:{s:4:"fuga";s:4:"piyo";s:4:"hoge";i:1;}'
@@ -39,5 +45,29 @@ end
 describe Array do
   it "should be serialized in PHP's data serialization format" do
     [1, "hoge"].php_serialize.should == 'a:2:{i:0;i:1;i:1;s:4:"hoge";}'
+  end
+end
+
+describe Symbol do
+  it "should be serialized in PHP's data serialization format" do
+    :hoge.php_serialize.should == 's:4:"hoge";'
+  end
+end
+
+describe NilClass do
+  it "should be serialized in PHP's data serialization format" do
+    nil.php_serialize.should == 'N;'
+  end
+end
+
+describe TrueClass do
+  it "should be serialized in PHP's data serialization format" do
+    true.php_serialize.should == 'b:1;'
+  end
+end
+
+describe FalseClass do
+  it "should be serialized in PHP's data serialization format" do
+    false.php_serialize.should == 'b:0;'
   end
 end

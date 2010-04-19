@@ -109,6 +109,12 @@ class Integer
   end
 end
 
+class Float
+  def php_serialize
+    return "d:#{to_s};"
+  end
+end
+
 class Hash
   def php_serialize
 #    puts "in hash"
@@ -131,6 +137,30 @@ class Array
     end
     str += "}"
     str
+  end
+end
+
+class Symbol
+  def php_serialize
+    return to_s.php_serialize
+  end
+end
+
+class NilClass
+  def php_serialize
+    return "N;"
+  end
+end
+
+class TrueClass
+  def php_serialize
+    return "b:1;"
+  end
+end
+
+class FalseClass
+  def php_serialize
+    return "b:0;"
   end
 end
 
