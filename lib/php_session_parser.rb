@@ -83,46 +83,39 @@ class PHPSessionParser
     end
     ret
   end
+end
 
+class Hash
   def to_php_session
     result = ""
-    @hash.each_pair do |key, value|
-      result += value.to_php_session(key)
+    keys.sort_by{|key| key.to_s}.each do |key|
+      value = self[key]
+      result += "#{key}|#{value.php_serialize}"
     end
     result
   end
 end
 
 class String
-  def to_php_session(key = nil)
-    return "#{key}|s:#{length}:\"#{self}\";" if key
+  def php_serialize
 #    puts "s:#{length}:\"#{self}\";"
     "s:#{length}:\"#{self}\";"
   end
 end
 
 class Integer
-  def to_php_session(key = nil)
-    return "#{key}|i:#{to_s};" if key
-    return "i:#{to_s};"
-  end
-end
-
-class Fixnum
-  def to_php_session(key = nil)
-    return "#{key}|i:#{to_s};" if key
+  def php_serialize
     return "i:#{to_s};"
   end
 end
 
 class Hash
-  def to_php_session(key = nil)
+  def php_serialize
 #    puts "in hash"
     str = ""
-    str += "#{key}|" if key
     str += "a:#{length}:{"
     each_pair do |k, value|
-      str += "#{k.to_php_session(nil)}#{value.to_php_session}"
+      str += "#{k.php_serialize}#{value.php_serialize}"
     end
     str += "}"
     str
@@ -130,12 +123,11 @@ class Hash
 end
 
 class Array
-  def to_php_session(key = nil)
+  def php_serialize
     str = ""
-    str += "#{key}|" if key
     str += "a:#{length}:{"
     each_index do |i|
-      str += "#{i.to_php_session(nil)}#{at(i).to_php_session}"
+      str += "#{i.php_serialize}#{at(i).php_serialize}"
     end
     str += "}"
     str
@@ -188,7 +180,7 @@ class CGI
           query = "update php_sessions set data = ? where session_id = ?"
         end
 #        puts query
-        @con.execute(query, @php_session.to_php_session, @session_id)
+        @con.execute(query, @php_session.hash.to_php_session, @session_id)
       end
 
       def close
