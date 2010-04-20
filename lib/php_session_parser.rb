@@ -77,7 +77,7 @@ class PHPSessionParser
 
   def extract_var_type
     index = nil
-    if index = @working_str.index(/[aisdNb]/)
+    if index = @working_str.index(/[aisdNbO]/)
       type, @working_str = @working_str[index..@working_str.length].split("", 2)
       type
     else
@@ -98,6 +98,16 @@ class PHPSessionParser
     end
     ret
   end
+
+  def extract_o
+    length, klass, @working_str = @working_str[1..@working_str.length].split(":", 3)
+    if length != "21" || klass != '"_RubyMarshalledObject"'
+      return {}
+    end
+    @working_str = ":" + @working_str
+    marshalled = extract_a
+    Marshal.load(marshalled["_marshalled"])
+  end
 end
 
 class Hash
@@ -113,6 +123,7 @@ end
 
 class String
   def php_serialize
+    return super if self.class != String
 #    puts "s:#{length}:\"#{self}\";"
     "s:#{length}:\"#{self}\";"
   end
@@ -120,18 +131,21 @@ end
 
 class Integer
   def php_serialize
+    return super if self.class != Bignum && self.class != Fixnum
     return "i:#{to_s};"
   end
 end
 
 class Float
   def php_serialize
+    return super if self.class != Float
     return "d:#{to_s};"
   end
 end
 
 class Hash
   def php_serialize
+    return super if self.class != Hash
 #    puts "in hash"
     str = ""
     str += "a:#{length}:{"
@@ -145,6 +159,7 @@ end
 
 class Array
   def php_serialize
+    return super if self.class != Array
     str = ""
     str += "a:#{length}:{"
     each_index do |i|
@@ -176,6 +191,12 @@ end
 class FalseClass
   def php_serialize
     return "b:0;"
+  end
+end
+
+class Object
+  def php_serialize
+    return %Q{O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";#{Marshal.dump(self).php_serialize}}}
   end
 end
 
