@@ -9,6 +9,11 @@ describe PHPSessionParser do
     session = PHPSessionParser.new('count|i:4;name|s:4:"hoge";return_to|a:2:{s:6:"action";s:4:"show";s:10:"controller";s:4:"cart";}').hash
     session.should == {"count" => 4, "name" => "hoge", "return_to" => {"action" => "show", "controller" => "cart"}}
   end
+
+  it 'should parse all types' do
+    session = PHPSessionParser.new('integer|i:4;string|s:4:"hoge";array|a:2:{i:0;i;1;s:3:"key";s:5:"value";}float|d:123.456;nil|N;true|b:1;false|b:0').hash
+    session.should == {"integer" => 4, "string" => "hoge", "array" => {0 => 1, "key" => "value"}, "float" => 123.456, "nil" => nil, "true" => true, "false" => false}
+  end
 end
 
 describe Hash do

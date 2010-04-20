@@ -19,7 +19,7 @@ class PHPSessionParser
     new_hash = {}
     while more_data?
       var_name = extract_var_name
-      type = extract_var_type
+      type = extract_var_type.downcase
       new_hash[var_name] = send("extract_#{type}") if var_name and type
     end
     new_hash
@@ -42,11 +42,26 @@ class PHPSessionParser
     value.to_i
   end
 
+  def extract_d
+    value, @working_str = @working_str[@working_str.index(/\d/)..@working_str.length].split(/[;:]/, 2)
+    value.to_f
+  end
+
   def extract_s
     length, @working_str = @working_str[1..@working_str.length].split(":", 2)
     value = @working_str[1..length.to_i]
     @working_str = @working_str.sub(@working_str[0..length.to_i+2], "")
     value
+  end
+
+  def extract_n
+    value, @working_str = @working_str.split(/[;:]/, 2)
+    nil
+  end
+
+  def extract_b
+    value, @working_str = @working_str[@working_str.index(/[01]/)..@working_str.length].split(/[;:]/, 2)
+    value == "1" ? true : false
   end
 
   def extract_var_name
@@ -62,7 +77,7 @@ class PHPSessionParser
 
   def extract_var_type
     index = nil
-    if index = @working_str.index(/[ais]/)
+    if index = @working_str.index(/[aisdNb]/)
       type, @working_str = @working_str[index..@working_str.length].split("", 2)
       type
     else
@@ -75,9 +90,9 @@ class PHPSessionParser
     number_of_elements = @working_str[/\d+/]
     trash, @working_str = @working_str.split(number_of_elements, 2)
     number_of_elements.to_i.times do |i|
-      key_type = extract_var_type
+      key_type = extract_var_type.downcase
       key = send("extract_#{key_type}")
-      value_type = extract_var_type
+      value_type = extract_var_type.downcase
       value = send("extract_#{value_type}")
       ret[key] = value
     end
