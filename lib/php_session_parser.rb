@@ -20,7 +20,7 @@ class PHPSessionParser
     while more_data?
       var_name = extract_var_name
       type = extract_var_type.downcase
-      new_hash[var_name] = send("extract_#{type}") if var_name and type
+      new_hash[var_name.to_sym] = send("extract_#{type}") if var_name and type
     end
     new_hash
   end
@@ -167,12 +167,6 @@ class Array
     end
     str += "}"
     str
-  end
-end
-
-class Symbol
-  def php_serialize
-    return to_s.php_serialize
   end
 end
 
