@@ -16,7 +16,7 @@ describe PHPSessionParser do
   end
 
   it 'should parse a marshalled object' do
-    session = PHPSessionParser.new(%Q(flash|O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:77:"\004\bIC:'ActionController::Flash::FlashHash{\006:\nerror"\022Error message\006:\n@used{\006;\006F";})).hash
+    session = PHPSessionParser.new(%Q(flash|O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:106:"BAhJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsGOgpl\ncnJvciISRXJyb3IgbWVzc2FnZQY6CkB1c2VkewY7BkY=\n";})).hash
     session["flash"].class.should == ActionController::Flash::FlashHash
     session["flash"][:error].should == "Error message"
   end
@@ -87,6 +87,6 @@ describe Object do
   it "should be serialized in PHP's data serialization format" do
     flash = ActionController::Flash::FlashHash.new()
     flash[:error] = "Error message"
-    flash.php_serialize.should == %Q(O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:77:"\004\bIC:'ActionController::Flash::FlashHash{\006:\nerror"\022Error message\006:\n@used{\006;\006F";})
+    flash.php_serialize.should == %Q(O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:106:"BAhJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsGOgpl\ncnJvciISRXJyb3IgbWVzc2FnZQY6CkB1c2VkewY7BkY=\n";})
   end
 end

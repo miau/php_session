@@ -106,7 +106,7 @@ class PHPSessionParser
     end
     @working_str = ":" + @working_str
     marshalled = extract_a
-    Marshal.load(marshalled["_marshalled"])
+    Marshal.load(ActiveSupport::Base64.decode64(marshalled["_marshalled"]))
   end
 end
 
@@ -196,7 +196,8 @@ end
 
 class Object
   def php_serialize
-    return %Q{O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";#{Marshal.dump(self).php_serialize}}}
+    value = ActiveSupport::Base64.encode64(Marshal.dump(self)).php_serialize
+    return %Q{O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";#{value}}}
   end
 end
 
