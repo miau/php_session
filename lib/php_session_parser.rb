@@ -3,10 +3,6 @@
 # Copyright Easynet Belgium
 # Licensed under the LGPL
 
-require 'cgi'
-require 'cgi/session'
-require 'dbi'
-
 class PHPSessionParser
   attr_reader :hash
 
@@ -193,72 +189,4 @@ class Object
     value = ActiveSupport::Base64.encode64(Marshal.dump(self)).php_serialize
     return %Q{O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";#{value}}}
   end
-end
-
-class CGI
-  class Session
-    def []=(key, val)
-      unless @write_lock
-        @write_lock = true
-      end
-      unless @data
-        @data = @dbman.restore
-      end
-      @data[key] = val
-    end
-    class PHPDBIStore
-      def initialize(session, options = {})
-        @session_id = session.session_id
-        @user       = options["user"]
-        @password   = options["password"]
-        @dbi_url    = options["dbi_url"]
-        @dbi_params = options["dbi_params"] || {}
-        @con = DBI.connect(@dbi_url, @user, @password)
-        @php_session = PHPSessionParser.new("")
-        restore
-      end
-      def restore
-#        puts "restoring session with id #{@session_id}"
-        query = "select data from php_sessions where session_id = ?"
-#        puts query
-        begin
-          @php_session = PHPSessionParser.new(@con.select_one(query, @session_id)[0])
-        rescue NoMethodError
-#          puts "this is a new session"
-          @php_session = PHPSessionParser.new("")
-        end
-
-        @php_session.hash
-      end
-
-      def update
-#        puts "in update"
-        return unless @php_session
-        count_query = "select count(*) from php_sessions where session_id = ?"
-        if @con.select_one(count_query, @session_id)[0].to_i < 1
-          query = "insert into php_sessions (data, session_id) VALUES (?, ?)"
-        else
-          query = "update php_sessions set data = ? where session_id = ?"
-        end
-#        puts query
-        @con.execute(query, @php_session.hash.to_php_session, @session_id)
-      end
-
-      def close
-        update
-      end
-    end
-  end
-end
-
-if $0 == __FILE__
-  STDIN.reopen("/dev/null")
-  cgi = CGI.new
-  session = CGI::Session.new(cgi, 'session_id' => "9435b4f48a705b3a748693156e39bd34", 'database_manager' => CGI::Session::PHPPostgresqlStore, :user => "dbuser", :password => 'password', :dbi_url => 'dbi:Pg:php_sessions:dbhost')
-  session['key'] = {'k' => 'v'}
-  puts session['key'].class
-  fail unless Hash === session['key']
-  puts session['key'].inspect
-  session.update
-  fail unless session['key'].inspect == '{"k" => "v"}'
 end
