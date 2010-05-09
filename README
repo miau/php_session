@@ -1,13 +1,79 @@
 PhpSession
 ==========
 
-Introduction goes here.
+This plugin enable your Rails application to share session information
+with PHP application.
+
+With this plugin, session information created by PHP application can be
+read/write by Rails application (at least primitive PHP types), and vice
+versa.
 
 
-Example
+Prerequisite
+============
+
+PHP sessions should be stored in a table on DBMS.  It is supposed that
+the PHP application use Jon Parise's PostgreSQL Session Handler, type of
+DBMS is not limited and table and fields' name could be customized.
+
+  PostgreSQL Session Handler for PHP
+  http://www.csh.rit.edu/~jon/projects/pgsql_session_handler/
+
+The session table of PHP's environment is supposed to be below by default.
+
+  CREATE TABLE php_sessions (
+      session_id  CHAR(40)    NOT NULL PRIMARY KEY,
+      last_active INTEGER     NOT NULL,
+      data        TEXT
+  );
+
+
+Usage
+=====
+
+If you have not created config/initializers/session_store.rb, create the
+file at first.
+
+  rake config/initializers/session_store.rb
+
+And you use the acive record store, uncomment this line.
+
+  #ActionController::Base.session_store = :active_record_store
+
+You might change session key string if your rails application shares
+session key with PHP application.
+
+  ActionController::Base.session = {
+    :key         => 'PHPSESSID',
+  }
+
+And you should set ActiveRecord::SessionStore.session_class;
+
+  ActiveRecord::SessionStore.session_class = PhpSession
+
+Unless the database of PHP session table is same as Rails' database
+defined in config/database.yml, you should set PHPSession.connection.
+
+  config = {
+    :host     => "192.168.0.1",
+    :port     => "5432",
+    :username => "username",
+    :password => "password",
+    :database => "database",
+  }
+  PhpSession.connection = ActiveRecord::Base::postgresql_connection(config)
+
+
+License
 =======
 
-Example goes here.
+This plugin is based on PHPSessionParser written by Raphael Bauduin.
+
+  http://groups.google.com/group/comp.lang.ruby/browse_thread/thread/dcfdb288c70b3ca4?pli=1
+
+I want to release PhpSession under the MIT license, but PHPSessionParser
+is released under the LGPL licence.  So I release it under the LGPL
+license until I have rewrited entire LGPL codes.
 
 
-Copyright (c) 2010 [name of plugin creator], released under the MIT license
+Copyright (c) 2010 Easynet Belgium and Koji Ando, released under the LGPL license
