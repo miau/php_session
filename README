@@ -28,13 +28,22 @@ The session table of PHP's environment is supposed to be below by default.
   );
 
 
+Install
+=======
+
+You can install the plugin with the following command.
+
+  $ cd <RAILS_ROOT>
+  $ ruby script/plugin install git://github.com/miau/php_session
+
+
 Usage
 =====
 
 If you have not created config/initializers/session_store.rb, create the
 file at first.
 
-  rake config/initializers/session_store.rb
+  $ rake config/initializers/session_store.rb
 
 And you use the acive record store, uncomment this line.
 
