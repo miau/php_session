@@ -20,6 +20,16 @@ describe PHPSessionParser do
     session[:flash].class.should == ActionController::Flash::FlashHash
     session[:flash][:error].should == "Error message"
   end
+
+  it "should parse a PHP's array that has numeric keys as an Ruby's array" do
+    session = PHPSessionParser.new('array_like_hash|a:2:{i:0;i:123;i:1;s:3:"abc";}').hash
+    session.should == {:array_like_hash => [123, "abc"]}
+  end
+
+  it "should parse a empty PHP's array as a empty Ruby's hash" do
+    session = PHPSessionParser.new('array_like_hash|a:0:{}').hash
+    session.should == {:array_like_hash => {}}
+  end
 end
 
 describe Hash do

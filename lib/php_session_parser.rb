@@ -85,12 +85,21 @@ class PHPSessionParser
     ret = {}
     number_of_elements = @working_str[/\d+/]
     trash, @working_str = @working_str.split(number_of_elements, 2)
+    might_be_array = true
     number_of_elements.to_i.times do |i|
       key_type = extract_var_type.downcase
       key = send("extract_#{key_type}")
       value_type = extract_var_type.downcase
       value = send("extract_#{value_type}")
       ret[key] = value
+      if key != i
+        might_be_array = false
+      end
+    end
+
+    if ret.length > 0 && might_be_array
+      # extracted data seems to be array
+      return ret.keys.map{|key| ret[key]}
     end
     ret
   end
