@@ -15,6 +15,13 @@ describe PHPSessionParser do
     session.should == {:integer => 4, :string => "hoge", :array => {0 => 1, "key" => "value"}, :float => 123.456, :nil => nil, :true => true, :false => false}
   end
 
+  it 'should parse long string' do
+    len = 2 ** 16
+    str = "a" * len
+    session = PHPSessionParser.new(%Q[long_string|s:#{len}:"#{str}"]).hash
+    session.should == {:long_string => str}
+  end
+
   it 'should parse a marshalled object' do
     session = PHPSessionParser.new(%Q(obj|O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:106:"BAhJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsGOgpl\ncnJvciISRXJyb3IgbWVzc2FnZQY6CkB1c2VkewY7BkY=\n";})).hash
     session[:obj].class.should == ActionController::Flash::FlashHash

@@ -49,7 +49,7 @@ class PHPSessionParser
   def extract_s
     length, @working_str = @working_str[1..@working_str.length].split(":", 2)
     value = @working_str[1..length.to_i]
-    @working_str = @working_str.sub(@working_str[0..length.to_i+2], "")
+    @working_str[0..length.to_i+2] = ""
     value
   end
 
