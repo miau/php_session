@@ -16,7 +16,10 @@ class PHPSessionParser
     while more_data?
       var_name = extract_var_name
       type = extract_var_type.downcase
-      new_hash[var_name.to_sym] = send("extract_#{type}") if var_name and type
+      if var_name and type
+        key = (var_name == "flash") ? var_name : var_name.to_sym
+        new_hash[key] = send("extract_#{type}")
+      end
     end
     new_hash
   end

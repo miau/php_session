@@ -16,9 +16,15 @@ describe PHPSessionParser do
   end
 
   it 'should parse a marshalled object' do
+    session = PHPSessionParser.new(%Q(obj|O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:106:"BAhJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsGOgpl\ncnJvciISRXJyb3IgbWVzc2FnZQY6CkB1c2VkewY7BkY=\n";})).hash
+    session[:obj].class.should == ActionController::Flash::FlashHash
+    session[:obj][:error].should == "Error message"
+  end
+
+  it 'should parse flash object and store it with a key "flash" not :flash' do
     session = PHPSessionParser.new(%Q(flash|O:21:"_RubyMarshalledObject":1:{s:11:"_marshalled";s:106:"BAhJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsGOgpl\ncnJvciISRXJyb3IgbWVzc2FnZQY6CkB1c2VkewY7BkY=\n";})).hash
-    session[:flash].class.should == ActionController::Flash::FlashHash
-    session[:flash][:error].should == "Error message"
+    session["flash"].class.should == ActionController::Flash::FlashHash
+    session["flash"][:error].should == "Error message"
   end
 
   it "should parse a PHP's array that has numeric keys as an Ruby's array" do
