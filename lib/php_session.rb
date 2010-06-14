@@ -29,24 +29,28 @@ class PhpSession < ActiveRecord::SessionStore::SqlBypass
 
     if @new_record
       @new_record = false
-      @@connection.update <<-end_sql, 'Create session'
-        INSERT INTO #{@@table_name} (
-          #{@@connection.quote_column_name(@@session_id_column)},
-          #{@@connection.quote_column_name(@@data_column)},
-          #{@@connection.quote_column_name(@@last_active_column)}
-        ) VALUES (
-          #{@@connection.quote(session_id)},
-          #{@@connection.quote(marshaled_data)},
-          #{@@connection.quote(Time.now.to_f)}
-        )
-      end_sql
-    else
-      @@connection.update <<-end_sql, 'Update session'
-        UPDATE #{@@table_name}
-        SET #{@@connection.quote_column_name(@@data_column)} = #{@@connection.quote(marshaled_data)},
-            #{@@connection.quote_column_name(@@last_active_column)} = #{@@connection.quote(Time.now.to_f)}
-        WHERE #{@@connection.quote_column_name(@@session_id_column)} = #{@@connection.quote(session_id)}
-      end_sql
+      begin
+        return @@connection.update <<-end_sql, 'Create session'
+          INSERT INTO #{@@table_name} (
+            #{@@connection.quote_column_name(@@session_id_column)},
+            #{@@connection.quote_column_name(@@data_column)},
+            #{@@connection.quote_column_name(@@last_active_column)}
+          ) VALUES (
+            #{@@connection.quote(session_id)},
+            #{@@connection.quote(marshaled_data)},
+            #{@@connection.quote(Time.now.to_f)}
+          )
+        end_sql
+      rescue => e
+        # Sometimes duplicate key errors caused by race condition occur.
+        # When it occurs, try update statement.
+      end
     end
+    @@connection.update <<-end_sql, 'Update session'
+      UPDATE #{@@table_name}
+      SET #{@@connection.quote_column_name(@@data_column)} = #{@@connection.quote(marshaled_data)},
+          #{@@connection.quote_column_name(@@last_active_column)} = #{@@connection.quote(Time.now.to_f)}
+      WHERE #{@@connection.quote_column_name(@@session_id_column)} = #{@@connection.quote(session_id)}
+    end_sql
   end
 end
